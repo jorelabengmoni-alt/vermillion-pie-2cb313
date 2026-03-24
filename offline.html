@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediSecu – Hors connexion</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0a0f1e;color:#e8f4f8;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.logo{font-size:2.5rem;font-weight:800;color:#00c2a8;margin-bottom:8px}
+.logo span{color:#e8f4f8}
+.icon{font-size:5rem;margin-bottom:24px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+h1{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+p{color:#8ba9c8;font-size:.95rem;line-height:1.6;max-width:320px;margin-bottom:24px}
+.btn{background:linear-gradient(135deg,#00c2a8,#009e88);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;max-width:280px}
+.offline-tip{background:#1a2338;border:1px solid #1e3a5f;border-radius:12px;padding:16px;margin-top:24px;max-width:320px}
+.offline-tip h3{color:#00c2a8;font-size:.9rem;margin-bottom:8px}
+.offline-tip li{color:#8ba9c8;font-size:.83rem;text-align:left;margin-left:16px;line-height:1.8}
+</style>
+</head>
+<body>
+  <div class="logo">Medi<span>Secu</span></div>
+  <div class="icon">📡</div>
+  <h1>Pas de connexion Internet</h1>
+  <p>MediSecu nécessite une connexion pour scanner et authentifier vos médicaments. Reconnectez-vous pour continuer.</p>
+  <button class="btn" onclick="window.location.reload()">🔄 Réessayer</button>
+  <div class="offline-tip">
+    <h3>💡 En attendant, vous pouvez :</h3>
+    <ul>
+      <li>Consulter votre pilulier (si déjà chargé)</li>
+      <li>Activer le WiFi ou les données mobiles</li>
+      <li>Vérifier votre connexion MTN / Orange</li>
+    </ul>
+  </div>
+</body>
+</html>

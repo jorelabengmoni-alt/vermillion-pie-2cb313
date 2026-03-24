@@ -4,6 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediSecu – Santé Numérique Africaine</title>
+<meta name="description" content="Scannez, authentifiez et gerez vos medicaments. Protection contre les contrefacons en Afrique francophone.">
+<meta name="keywords" content="medicament, sante, Cameroun, contrefacon, pharmacie, scanner">
+<meta name="author" content="MediSecu">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00c2a8">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS / Safari -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MediSecu">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/icon-72.png">
+<link rel="apple-touch-icon" sizes="96x96" href="/icon-96.png">
+<link rel="apple-touch-icon" sizes="128x128" href="/icon-128.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/icon-144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
+
+<!-- Open Graph (partage WhatsApp / Facebook) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MediSecu - Sante Numerique Africaine">
+<meta property="og:description" content="Scannez vos medicaments en 3 secondes. Detection contrefacons, prix PPV officiel, pilulier familial. 100% gratuit.">
+<meta property="og:image" content="https://vermillion-pie-2cb313.netlify.app/icon-512.png">
+<meta property="og:url" content="https://vermillion-pie-2cb313.netlify.app">
+<meta property="og:locale" content="fr_FR">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MediSecu">
+<meta name="twitter:description" content="Scanner vos medicaments en 3 secondes. Gratuit.">
+<meta name="twitter:image" content="https://vermillion-pie-2cb313.netlify.app/icon-512.png">
+
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/index.min.js"></script>
@@ -601,7 +641,7 @@ select.form-input{appearance:none}
     <div class="modal-handle"></div>
     <div class="modal-title">👤 Mon Profil <button class="modal-close" onclick="closeModal('profileModal')">✕</button></div>
     <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;margin:0 auto 14px">JO</div>
-    <div style="text-align:center;margin-bottom:16px"><div style="font-weight:600">Jorel</div><div style="color:var(--text2);font-size:.85rem">jorel@medisecu.cm</div></div>
+    <div style="text-align:center;margin-bottom:16px"><div style="font-weight:600">Jorel</div><div style="color:var(--text2);font-size:.85rem"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b1dbdec3d4ddf1dcd4d5d8c2d4d2c49fd2dc">[email&#160;protected]</a></div></div>
     <div class="form-group"><label class="form-label">Groupe sanguin</label><select class="form-input"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
     <div class="form-group"><label class="form-label">Allergies connues</label><input type="text" class="form-input" placeholder="Ex: Pénicilline, Aspirine..." /></div>
     <button class="btn btn-primary btn-full" onclick="closeModal('profileModal');showToast('Profil mis à jour','success')">💾 Enregistrer</button>
@@ -664,7 +704,7 @@ select.form-input{appearance:none}
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // SPLASH
 window.addEventListener('load',()=>{
   setTimeout(()=>{
@@ -942,9 +982,4 @@ function copyNumberSilent(number){
 
 // MONTANT SOUTIEN
 function selectAmount(btn,amount){
-  document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected');
-  if(amount==='libre') showToast('Entrez le montant de votre choix lors du virement','info');
-}
-</script>
-</body>
-</html>
+  document.q
