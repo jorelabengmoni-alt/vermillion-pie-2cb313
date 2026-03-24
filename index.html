@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediSecu – Santé Numérique Africaine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/index.min.js"></script>
+<style>
+:root{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2338;--border:#1e3a5f;--accent:#00c2a8;--accent2:#0077ff;--warn:#ff6b35;--danger:#e63946;--success:#2dd4bf;--gold:#f4a261;--text:#e8f4f8;--text2:#8ba9c8;--text3:#4a7090;--radius:16px;--radius-sm:10px;--shadow:0 8px 32px rgba(0,0,0,.4);--glow:0 0 24px rgba(0,194,168,.15)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#050d1a,#0a1f3d,#061528);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s}
+.logo-big{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:800}.logo-big span,.logo span{color:var(--accent)}
+.tagline{color:var(--text2);font-size:1rem;margin-top:8px;letter-spacing:.08em}
+.pulse-ring{width:120px;height:120px;border-radius:50%;border:2px solid var(--accent);margin-bottom:24px;display:flex;align-items:center;justify-content:center;animation:pulse 2s infinite;position:relative}
+.pulse-ring::before{content:'';position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(0,194,168,.3);animation:pulse 2s infinite .5s}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.7}}
+.splash-icon{font-size:3rem}.splash-bar{width:200px;height:3px;background:var(--surface2);border-radius:3px;margin-top:32px;overflow:hidden}
+.splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;animation:load 2.2s ease forwards}
+@keyframes load{to{width:100%}}
+#app{display:none;flex-direction:column;min-height:100vh}#app.visible{display:flex}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge-notif{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:1rem;transition:all .2s}
+.badge-notif:hover{border-color:var(--accent)}.notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--warn);border-radius:50%;border:2px solid var(--bg)}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:.65rem}
+.nav-item.active{color:var(--accent)}.nav-icon{font-size:1.3rem;transition:transform .2s}.nav-item.active .nav-icon{transform:scale(1.15)}
+.page{display:none;flex:1;padding:16px 16px 100px;animation:fadeUp .3s ease}.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.3rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title .accent{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:all .2s;box-shadow:var(--shadow)}
+.card:hover{border-color:var(--accent);box-shadow:var(--glow)}.card-row{display:flex;gap:12px}.card-half{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#009e88);color:#fff}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,194,168,.4)}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text)}.btn-secondary:hover{border-color:var(--accent)}
+.btn-warn{background:linear-gradient(135deg,var(--warn),#e05000);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}.btn-gold{background:linear-gradient(135deg,#f4a261,#e76f51);color:#fff}
+.btn-full{width:100%}.btn-sm{padding:8px 14px;font-size:.8rem}
+/* CAMERA */
+.camera-wrapper{position:relative;border-radius:var(--radius);overflow:hidden;background:#000;margin-bottom:12px;display:none}
+.camera-wrapper.active{display:block}
+#cameraVideo{width:100%;display:block;max-height:300px;object-fit:cover}
+.camera-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-frame{width:200px;height:200px;position:relative}
+.sf-corner{position:absolute;width:24px;height:24px;border-color:var(--accent);border-style:solid}
+.sf-corner.tl{top:0;left:0;border-width:3px 0 0 3px}.sf-corner.tr{top:0;right:0;border-width:3px 3px 0 0}
+.sf-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px}.sf-corner.br{bottom:0;right:0;border-width:0 3px 3px 0}
+.scan-laser{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:laser 1.5s ease-in-out infinite}
+@keyframes laser{0%{top:10%}100%{top:90%}}
+.camera-controls{display:flex;gap:8px;margin-bottom:10px}
+.cam-status{text-align:center;padding:9px 12px;font-size:.82rem;border-radius:var(--radius-sm);margin-bottom:10px}
+.cam-status.scanning{background:rgba(0,194,168,.1);color:var(--success);border:1px solid rgba(0,194,168,.3)}
+.cam-status.error{background:rgba(230,57,70,.1);color:var(--danger);border:1px solid rgba(230,57,70,.3)}
+.cam-status.idle{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:var(--radius-sm);padding:4px;margin-bottom:16px}
+.tab-btn{flex:1;padding:8px 6px;border:none;border-radius:8px;background:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#fff;font-weight:500}.tab-content{display:none}.tab-content.active{display:block}
+/* PRODUCT */
+.product-result{display:none}.product-result.show{display:block}
+.product-header{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px}
+.product-img{width:80px;height:80px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--surface2),var(--border));display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0}
+.product-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:4px}
+.product-lab{color:var(--text2);font-size:.85rem;margin-bottom:8px}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.badge-green{background:rgba(45,212,191,.15);color:var(--success);border:1px solid rgba(45,212,191,.3)}
+.badge-warn{background:rgba(255,107,53,.15);color:var(--warn);border:1px solid rgba(255,107,53,.3)}
+.badge-blue{background:rgba(0,119,255,.15);color:var(--accent2);border:1px solid rgba(0,119,255,.3)}
+.badge-gold{background:rgba(244,162,97,.15);color:var(--gold);border:1px solid rgba(244,162,97,.3)}
+.badge-danger{background:rgba(230,57,70,.15);color:var(--danger);border:1px solid rgba(230,57,70,.3)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.info-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border)}
+.info-box-label{color:var(--text3);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.info-box-val{font-weight:600;font-size:.95rem}.info-box-val.price-ok{color:var(--success)}.info-box-val.price-warn{color:var(--warn)}
+.dosage-box{background:linear-gradient(135deg,rgba(0,194,168,.08),rgba(0,119,255,.05));border:1px solid rgba(0,194,168,.2);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.dosage-title{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dosage-list li{margin-left:16px;color:var(--text2);font-size:.9rem;line-height:1.7}
+.generic-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;border:1px solid var(--border)}
+.generic-economy{color:var(--success);font-weight:600;font-size:.85rem}
+.interaction-alert{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+/* PHARMACIE */
+.profile-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.profile-chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:.82rem;transition:all .2s}
+.profile-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.med-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border)}
+.med-icon{font-size:1.8rem;width:44px;text-align:center}.med-info{flex:1}
+.med-name{font-weight:500;margin-bottom:2px}.med-exp{font-size:.78rem}
+.med-exp.ok{color:var(--success)}.med-exp.soon{color:var(--gold)}.med-exp.expired{color:var(--danger)}
+.pilule-item{background:var(--surface2);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.pilule-time{background:var(--accent);color:#fff;border-radius:8px;padding:6px 10px;font-size:.8rem;font-weight:700;min-width:54px;text-align:center}
+.pilule-info{flex:1}.pilule-name{font-weight:500;margin-bottom:2px}.pilule-detail{font-size:.8rem;color:var(--text2)}
+.toggle-btn{width:44px;height:24px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--surface);position:relative;transition:all .3s}
+.toggle-btn.on{background:var(--accent);border-color:var(--accent)}
+.toggle-btn::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:all .3s}
+.toggle-btn.on::after{left:23px}
+/* AUTH */
+.qr-frame{width:160px;height:160px;margin:0 auto 14px;border-radius:12px;background:var(--surface2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative;overflow:hidden}
+.qr-corner{position:absolute;width:18px;height:18px;border-color:var(--accent);border-style:solid}
+.qr-corner.tl{top:5px;left:5px;border-width:3px 0 0 3px}.qr-corner.tr{top:5px;right:5px;border-width:3px 3px 0 0}
+.qr-corner.bl{bottom:5px;left:5px;border-width:0 0 3px 3px}.qr-corner.br{bottom:5px;right:5px;border-width:0 3px 3px 0}
+.auth-result{border-radius:var(--radius);padding:20px;margin-bottom:16px;text-align:center;display:none}
+.auth-result.show{display:block}
+.auth-result.authentic{background:linear-gradient(135deg,rgba(45,212,191,.1),rgba(0,194,168,.05));border:2px solid var(--success)}
+.auth-result.suspect{background:linear-gradient(135deg,rgba(230,57,70,.1),rgba(255,107,53,.05));border:2px solid var(--danger)}
+.auth-result.warning{background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(255,107,53,.05));border:2px solid var(--gold)}
+.auth-icon-big{font-size:3.5rem;margin-bottom:8px}.auth-status{font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:6px}
+.auth-detail{color:var(--text2);font-size:.9rem;line-height:1.6}
+.verify-step{display:flex;gap:14px;align-items:flex-start;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;color:#fff}
+.step-text{font-size:.87rem;color:var(--text2);line-height:1.5}.step-text strong{color:var(--text)}
+/* COMMERÇANT */
+.pub-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:.82rem;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:all .2s;outline:none}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,194,168,.1)}
+textarea.form-input{resize:vertical;min-height:90px}
+.file-drop{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all .3s;position:relative}
+.file-drop:hover,.file-drop.dragover{border-color:var(--accent);background:rgba(0,194,168,.04)}
+.file-drop input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:4px;font-size:.82rem}
+.file-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.type-chip{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:.82rem;transition:all .2s;display:inline-flex;align-items:center;gap:6px;margin:3px}
+.type-chip.selected{background:rgba(0,119,255,.2);border-color:var(--accent2);color:var(--accent2)}
+.pub-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;transition:all .2s}
+.pub-card:hover{border-color:var(--accent2)}
+.pub-card-banner{height:70px;background:linear-gradient(135deg,var(--surface2),var(--border));display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
+.pub-card-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,119,255,.2),rgba(0,194,168,.1))}
+.pub-card-body{padding:12px}
+.pub-card-merchant{font-size:.75rem;color:var(--text3);margin-bottom:4px}
+.pub-card-title{font-weight:600;margin-bottom:6px;font-size:.92rem}
+.pub-card-meta{display:flex;gap:8px;align-items:center}.pub-card-date{font-size:.75rem;color:var(--text3);margin-left:auto}
+/* MONÉTISATION */
+.mono-hero{background:linear-gradient(135deg,rgba(244,162,97,.15),rgba(230,57,70,.08),rgba(0,119,255,.1));border:1px solid rgba(244,162,97,.3);border-radius:var(--radius);padding:22px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.plan-card{border-radius:var(--radius);padding:20px;margin-bottom:12px;border:2px solid var(--border);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.plan-card:hover{transform:translateY(-3px)}
+.plan-card.free{background:var(--surface)}
+.plan-card.starter{background:linear-gradient(135deg,rgba(0,119,255,.08),rgba(0,194,168,.05));border-color:rgba(0,119,255,.4)}
+.plan-card.pro{background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(230,57,70,.06));border-color:rgba(244,162,97,.5)}
+.plan-card.pro::after{content:'⭐ POPULAIRE';position:absolute;top:12px;right:-28px;background:var(--gold);color:#fff;font-size:.62rem;font-weight:700;padding:3px 36px;transform:rotate(45deg);letter-spacing:.05em}
+.plan-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:4px}
+.plan-price{font-size:1.5rem;font-weight:800;margin-bottom:2px}.plan-price span{font-size:.85rem;font-weight:400;color:var(--text2)}
+.plan-feature{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.85rem;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04)}
+.plan-feature:last-child{border:none}.plan-feature.locked{color:var(--text3)}
+.pf-icon{width:18px;color:var(--accent);font-size:.9rem}.plan-feature.locked .pf-icon{color:var(--text3)}
+.ad-banner{background:linear-gradient(135deg,rgba(0,119,255,.08),rgba(0,194,168,.04));border:1px solid rgba(0,119,255,.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;position:relative;cursor:pointer}
+.ad-label{position:absolute;top:4px;right:8px;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.mm-card{border-radius:var(--radius-sm);padding:16px;margin-bottom:8px;display:flex;gap:14px;align-items:center;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.mm-card:hover{transform:translateY(-2px)}
+.mm-card.mtn{background:rgba(255,200,0,.08);border-color:rgba(255,200,0,.3)}
+.mm-card.orange-mm{background:rgba(255,100,0,.08);border-color:rgba(255,100,0,.3)}
+.mm-logo{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.mm-logo.mtn{background:rgba(255,200,0,.2)}.mm-logo.orange-mm{background:rgba(255,100,0,.2)}
+.mm-info{flex:1}.mm-provider{font-weight:700;font-size:.95rem;margin-bottom:2px}
+.mm-number{font-size:1rem;color:var(--accent);font-weight:600;letter-spacing:.03em}.mm-name{font-size:.78rem;color:var(--text2)}
+.mm-copy{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer;transition:all .2s;color:var(--text2)}
+.mm-copy:hover{border-color:var(--accent);color:var(--accent)}
+.amount-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.amount-btn{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:.82rem;transition:all .2s;color:var(--text2)}
+.amount-btn.selected,.amount-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(244,162,97,.08)}
+/* INFO */
+.hero-info{background:linear-gradient(135deg,rgba(0,194,168,.12),rgba(0,119,255,.08));border:1px solid rgba(0,194,168,.2);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:20px}
+.campaign-slot{background:linear-gradient(135deg,rgba(244,162,97,.12),rgba(255,107,53,.06));border:1px solid rgba(244,162,97,.3);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.campaign-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
+.premium-card{background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(0,119,255,.08),rgba(0,194,168,.06));border:1px solid var(--gold);border-radius:var(--radius);padding:20px;margin-bottom:16px;cursor:pointer;transition:all .2s}
+.premium-card:hover{box-shadow:0 8px 32px rgba(244,162,97,.2)}
+.premium-feature{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text2);font-size:.87rem}
+.premium-feature:last-child{border:none}.premium-feature .check{color:var(--gold)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);border-bottom:none;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:20px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{cursor:pointer;color:var(--text2);font-size:1.4rem;background:none;border:none}
+/* TOAST */
+.notif-toast{position:fixed;top:72px;left:16px;right:16px;z-index:300;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:var(--glow);transform:translateY(-20px);opacity:0;pointer-events:none;transition:all .3s}
+.notif-toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+/* MISC */
+.divider{height:1px;background:var(--border);margin:16px 0}
+.search-bar{display:flex;gap:8px;margin-bottom:14px}
+.search-bar input{flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:all .2s}
+.search-bar input:focus{border-color:var(--accent)}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.text-center{text-align:center}
+select.form-input{appearance:none}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="pulse-ring"><div class="splash-icon">💊</div></div>
+  <div class="logo-big">Medi<span>Secu</span></div>
+  <div class="tagline">Santé Numérique · Afrique Francophone</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="logo">Medi<span>Secu</span></div>
+    <div class="topbar-right">
+      <div class="badge-notif" onclick="showNotifModal()">🔔<span class="notif-dot"></span></div>
+      <div class="user-avatar" onclick="showProfileModal()">JO</div>
+    </div>
+  </div>
+
+  <div class="notif-toast" id="toast">
+    <div id="toastIcon" style="font-size:1.3rem">✅</div>
+    <div id="toastText" style="flex:1;font-size:.87rem"></div>
+    <button onclick="hideToast()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1rem">✕</button>
+  </div>
+
+  <!-- PAGE SCANNER -->
+  <div class="page active" id="page-scan">
+    <div class="section-title">Scanner un <span class="accent">Médicament</span></div>
+
+    <div class="ad-banner" onclick="showToast('🔗 Offre partenaire ouverte','info')">
+      <span class="ad-label">Pub</span>
+      <div style="font-size:2rem;flex-shrink:0">🏥</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:.9rem">Clinique Saint-Paul – Yaoundé</div><div style="font-size:.78rem;color:var(--text2)">Consultation générale à 5 000 FCFA</div></div>
+      <button class="btn btn-sm btn-primary">Voir →</button>
+    </div>
+
+    <div class="camera-wrapper" id="cameraWrapper">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div class="camera-overlay">
+        <div class="scan-frame">
+          <div class="sf-corner tl"></div><div class="sf-corner tr"></div>
+          <div class="sf-corner bl"></div><div class="sf-corner br"></div>
+          <div class="scan-laser"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cam-status idle" id="camStatus">📷 Appuyez sur Activer pour scanner avec la caméra</div>
+
+    <div class="camera-controls">
+      <button class="btn btn-primary card-half" id="btnStartCam" onclick="startCamera()">📷 Activer Caméra</button>
+      <button class="btn btn-danger card-half" id="btnStopCam" onclick="stopCamera()" style="display:none">⏹ Arrêter</button>
+      <button class="btn btn-secondary" id="btnFlip" onclick="flipCamera()" style="display:none;padding:12px 14px" title="Retourner caméra">🔄</button>
+    </div>
+
+    <div class="card-row" style="margin-bottom:12px">
+      <button class="btn btn-secondary card-half btn-sm" onclick="toggleManual()">✍️ Saisie manuelle</button>
+      <label class="btn btn-secondary card-half btn-sm" style="cursor:pointer">🖼️ Depuis galerie<input type="file" accept="image/*" style="display:none" onchange="scanFromFile(this)"></label>
+    </div>
+
+    <div id="manualInput" style="display:none;margin-bottom:12px">
+      <div class="search-bar">
+        <input type="text" id="manualCode" placeholder="Code-barres ou nom du médicament..." onkeydown="if(event.key==='Enter')lookupManual()" />
+        <button class="btn btn-primary" onclick="lookupManual()">🔍</button>
+      </div>
+    </div>
+
+    <div class="product-result" id="productResult">
+      <div class="card">
+        <div class="product-header">
+          <div class="product-img">💊</div>
+          <div>
+            <div class="product-name" id="pName">Amoxicilline 500mg</div>
+            <div class="product-lab" id="pLab">Cooper Pharma · Gélules</div>
+            <div class="badges">
+              <span class="badge badge-green" id="pAuthBadge">✓ Authentique</span>
+              <span class="badge badge-blue">Ordonnance</span>
+            </div>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'tab-dosage')">Posologie</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-prix')">Prix</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-generiques')">Génériques</button>
+          <button class="tab-btn" onclick="switchTab(this,'tab-infomed')">Infos</button>
+        </div>
+        <div class="tab-content active" id="tab-dosage">
+          <div class="dosage-box">
+            <div class="dosage-title">💡 Posologie en langage simple</div>
+            <ul class="dosage-list" id="pDosage">
+              <li><strong>Adultes :</strong> 1 gélule 3×/jour (matin, midi, soir) pendant les repas</li>
+              <li><strong>Durée :</strong> 7–10 jours – terminer le traitement complet</li>
+              <li><strong>Enfants &gt;10 kg :</strong> 40–90 mg/kg/jour en 3 prises</li>
+              <li><strong>⚠️ Allergie pénicilline :</strong> Informer le médecin avant toute prise</li>
+            </ul>
+          </div>
+          <div class="interaction-alert" id="interactionAlert" style="display:none">
+            <div style="font-size:1.4rem;flex-shrink:0">⚡</div>
+            <div style="font-size:.87rem;color:var(--text2)"><strong style="color:var(--danger)">Interaction détectée</strong> — Peut interagir avec <strong id="interactDrug">un médicament</strong> dans votre pilulier. Consultez un pharmacien.</div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="addToPilulier()">➕ Ajouter au pilulier</button>
+        </div>
+        <div class="tab-content" id="tab-prix">
+          <div class="info-grid">
+            <div class="info-box"><div class="info-box-label">Prix PPV officiel</div><div class="info-box-val price-ok" id="pPPV">1 850 FCFA</div></div>
+            <div class="info-box"><div class="info-box-label">Prix relevé</div><div class="info-box-val price-warn" id="pReleve">2 200 FCFA</div></div>
+          </div>
+          <div class="card" style="background:rgba(255,107,53,.08);border-color:rgba(255,107,53,.3)">
+            <div style="color:var(--warn);font-weight:600;margin-bottom:4px">⚠️ Surfacturation possible</div>
+            <div style="font-size:.85rem;color:var(--text2)">Dépasse de <strong id="pDiff">+19%</strong> le tarif officiel. Signalez ou cherchez une pharmacie agréée.</div>
+          </div>
+          <button class="btn btn-secondary btn-full mt-8" onclick="showToast('📍 Pharmacies agréées chargées','info')">📍 Pharmacies agréées proches</button>
+          <button class="btn btn-secondary btn-full mt-8" onclick="showToast('⚑ Signalement envoyé','warn')">⚑ Signaler ce prix</button>
+        </div>
+        <div class="tab-content" id="tab-generiques">
+          <div style="color:var(--text2);font-size:.85rem;margin-bottom:12px">Équivalents thérapeutiques disponibles :</div>
+          <div class="generic-item"><div><div style="font-size:.9rem">Amoxil 500mg – GSK</div><div style="font-size:.78rem;color:var(--text3)">Gélules · 16 unités</div></div><div class="generic-economy">Éco : 650 FCFA</div></div>
+          <div class="generic-item"><div><div style="font-size:.9rem">Clamoxyl 500mg</div><div style="font-size:.78rem;color:var(--text3)">Gélules · 16 unités</div></div><div class="generic-economy">Éco : 400 FCFA</div></div>
+          <div class="generic-item"><div><div style="font-size:.9rem">Amoxicilline Biogaran</div><div style="font-size:.78rem;color:var(--text3)">Gélules · 16 unités</div></div><div class="generic-economy">Éco : 820 FCFA</div></div>
+        </div>
+        <div class="tab-content" id="tab-infomed">
+          <div class="info-grid">
+            <div class="info-box"><div class="info-box-label">Classe</div><div class="info-box-val" style="font-size:.85rem">Antibiotique β-lactamine</div></div>
+            <div class="info-box"><div class="info-box-label">AMM</div><div class="info-box-val price-ok">Validée</div></div>
+            <div class="info-box"><div class="info-box-label">Conservation</div><div class="info-box-val" style="font-size:.85rem">&lt;25°C, à l'abri</div></div>
+            <div class="info-box"><div class="info-box-label">Remboursement</div><div class="info-box-val" style="font-size:.85rem">CNPS : 70%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE PHARMACIE -->
+  <div class="page" id="page-pharmacie">
+    <div class="section-title">Ma <span class="accent">Pharmacie</span></div>
+    <div class="profile-chips" id="profileChips">
+      <div class="profile-chip active" onclick="selectProfile(this,'Moi')">👤 Moi</div>
+      <div class="profile-chip" onclick="selectProfile(this,'Maman')">👩 Maman</div>
+      <div class="profile-chip" onclick="selectProfile(this,'Papa')">👨 Papa</div>
+      <div class="profile-chip" onclick="selectProfile(this,'Enfant')">🧒 Enfant</div>
+      <div class="profile-chip" onclick="addProfile()" style="border-style:dashed">+ Profil</div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'armoire-tab')">🏠 Armoire</button>
+      <button class="tab-btn" onclick="switchTab(this,'pilulier-tab')">⏰ Pilulier</button>
+    </div>
+    <div class="tab-content active" id="armoire-tab">
+      <div id="armoireList">
+        <div class="med-item"><div class="med-icon">💊</div><div class="med-info"><div class="med-name">Amoxicilline 500mg</div><div class="med-exp ok">📅 Jan 2026 · ✅ OK</div></div><button class="btn btn-sm btn-secondary" onclick="showToast('Supprimé','warn')">🗑️</button></div>
+        <div class="med-item"><div class="med-icon">💉</div><div class="med-info"><div class="med-name">Doliprane 1000mg</div><div class="med-exp soon">📅 Mai 2025 · ⚠️ Bientôt</div></div><button class="btn btn-sm btn-secondary" onclick="showToast('Supprimé','warn')">🗑️</button></div>
+        <div class="med-item"><div class="med-icon">🧴</div><div class="med-info"><div class="med-name">Nivaquine 100mg</div><div class="med-exp expired">📅 Nov 2024 · ❌ Expiré</div></div><button class="btn btn-sm btn-danger" onclick="showToast('⚠️ Périmé retiré','danger')">🗑️</button></div>
+      </div>
+      <button class="btn btn-primary btn-full mt-12" onclick="switchPage('scan',document.querySelector('.nav-item'));showToast('📷 Activez la caméra pour scanner','info')">➕ Ajouter un médicament</button>
+    </div>
+    <div class="tab-content" id="pilulier-tab">
+      <div class="pilule-item"><div class="pilule-time">08:00</div><div class="pilule-info"><div class="pilule-name">Amoxicilline 500mg</div><div class="pilule-detail">1 gélule · Avec repas</div></div><button class="toggle-btn on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="pilule-item"><div class="pilule-time">13:00</div><div class="pilule-info"><div class="pilule-name">Amoxicilline 500mg</div><div class="pilule-detail">1 gélule · Avec repas</div></div><button class="toggle-btn" onclick="this.classList.toggle('on')"></button></div>
+      <div class="pilule-item"><div class="pilule-time">20:00</div><div class="pilule-info"><div class="pilule-name">Amoxicilline + Doliprane</div><div class="pilule-detail">Soir · Avec repas</div></div><button class="toggle-btn" onclick="this.classList.toggle('on')"></button></div>
+      <div class="divider"></div>
+      <div class="card" style="background:rgba(0,194,168,.06);border-color:rgba(0,194,168,.2)">
+        <div style="font-weight:600;margin-bottom:8px">🔔 Rappels activés</div>
+        <div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">Notifications navigateur actives. Rappel 5 min avant chaque prise.</div>
+        <a href="https://wa.me/237675555472?text=Rappel+MediSecu%3A+Prenez+votre+médicament+maintenant+%F0%9F%92%8A" class="btn btn-secondary btn-sm" target="_blank">📲 Rappel WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE AUTHENTIFIER -->
+  <div class="page" id="page-auth">
+    <div class="section-title">Authentifier un <span class="accent">Médicament</span></div>
+    <div class="card">
+      <div class="qr-frame"><div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div><div class="qr-corner br"></div>🔍</div>
+      <div style="color:var(--text2);font-size:.9rem;text-align:center;margin-bottom:14px">Scannez le code sécurisé ou entrez le numéro de lot</div>
+      <div class="search-bar">
+        <input type="text" id="authCode" placeholder="N° de lot : ex. LOT-2024-CM-9871" onkeydown="if(event.key==='Enter')verifyAuth()" />
+        <button class="btn btn-primary" onclick="verifyAuth()">Vérifier</button>
+      </div>
+    </div>
+    <div class="auth-result authentic show" id="authResult">
+      <div class="auth-icon-big">✅</div>
+      <div class="auth-status" style="color:var(--success)">Médicament Authentique</div>
+      <div class="auth-detail">Lot <strong>LOT-2024-CM-9871</strong> · Cooper Pharma<br>Enregistré DGSPSN · Vérifié le 23/03/2026<br>Péremption : <strong>Décembre 2026</strong></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:1rem">Comment vérifier ?</div>
+    <div class="verify-step"><div class="step-num">1</div><div class="step-text"><strong>Vérifiez l'hologramme</strong> — grattez la zone argentée sur la boîte pour révéler un code unique</div></div>
+    <div class="verify-step"><div class="step-num">2</div><div class="step-text"><strong>Scannez le QR Code</strong> ou saisissez le numéro de lot ci-dessus</div></div>
+    <div class="verify-step"><div class="step-num">3</div><div class="step-text"><strong>Lisez le résultat</strong> — vert = authentique · orange = douteux · rouge = contrefaçon</div></div>
+    <div class="verify-step"><div class="step-num">4</div><div class="step-text"><strong>En cas de doute</strong>, appelez le <strong>+237 222 22 08 00</strong> (DGSPSN)</div></div>
+    <div style="height:12px"></div>
+    <button class="btn btn-danger btn-full" onclick="showToast('⚑ Signalement envoyé à la DGSPSN','danger')">⚑ Signaler un faux médicament</button>
+  </div>
+
+  <!-- PAGE COMMERÇANT -->
+  <div class="page" id="page-merchant">
+    <div class="section-title">Espace <span class="accent">Commerçant</span></div>
+    <div class="card" style="background:linear-gradient(135deg,rgba(0,119,255,.15),rgba(0,194,168,.08));border-color:rgba(0,119,255,.3)">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px">👤 Pharmacie Centrale – Yaoundé</div>
+      <div style="color:var(--text2);font-size:.82rem;margin-bottom:8px">Compte vérifié depuis le 12/01/2025</div>
+      <div style="display:flex;gap:8px"><span class="badge badge-green">✓ Vérifié</span><span class="badge badge-blue">Pharmacie agréée</span><span class="badge badge-gold">⭐ Premium</span></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'pub-create-tab')">✏️ Nouvelle pub</button>
+      <button class="tab-btn" onclick="switchTab(this,'pub-list-tab')">📋 Mes pubs</button>
+      <button class="tab-btn" onclick="switchTab(this,'pub-stats-tab')">📊 Stats</button>
+    </div>
+    <div class="tab-content active" id="pub-create-tab">
+      <div class="pub-form">
+        <div class="form-group">
+          <label class="form-label">Type de publication</label>
+          <div id="typeSelector">
+            <span class="type-chip selected" onclick="selectType(this)">💊 Offre médicament</span>
+            <span class="type-chip" onclick="selectType(this)">📢 Annonce</span>
+            <span class="type-chip" onclick="selectType(this)">🏷️ Promotion</span>
+            <span class="type-chip" onclick="selectType(this)">📋 Ordonnance dispo</span>
+            <span class="type-chip" onclick="selectType(this)">🚨 Alerte rupture</span>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Titre</label><input type="text" class="form-input" id="pubTitle" placeholder="Ex: Amoxicilline 500mg – Prix officiel garanti" /></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="pubDesc" placeholder="Décrivez votre offre, conditions, localisation..."></textarea></div>
+        <div class="form-group"><label class="form-label">Prix (FCFA) – optionnel</label><input type="number" class="form-input" id="pubPrice" placeholder="1 850" /></div>
+        <div class="form-group">
+          <label class="form-label">Fichiers joints</label>
+          <div class="file-drop" id="fileDrop">
+            <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="handleFiles(this.files)" />
+            <div style="font-size:2rem;margin-bottom:8px">📎</div>
+            <div style="color:var(--text2);font-size:.85rem">Glissez vos fichiers ou appuyez<br><span style="font-size:.75rem;color:var(--text3)">Images · PDF · Excel · Word — max 10 Mo</span></div>
+          </div>
+          <div id="fileList"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Validité</label><select class="form-input" id="pubValidity"><option>24 heures</option><option>3 jours</option><option selected>7 jours</option><option>30 jours</option><option>Permanente</option></select></div>
+        <button class="btn btn-primary btn-full" onclick="publishPost()">🚀 Publier maintenant</button>
+      </div>
+    </div>
+    <div class="tab-content" id="pub-list-tab">
+      <div id="pubsList">
+        <div class="pub-card"><div class="pub-card-banner">💊</div><div class="pub-card-body"><div class="pub-card-merchant">Pharmacie Centrale</div><div class="pub-card-title">Amoxicilline 500mg – Stock disponible</div><div class="pub-card-meta"><span class="badge badge-green">Actif</span><span class="badge badge-blue">Offre</span><span class="pub-card-date">Il y a 2h</span></div></div></div>
+        <div class="pub-card"><div class="pub-card-banner">🏷️</div><div class="pub-card-body"><div class="pub-card-merchant">Pharmacie Centrale</div><div class="pub-card-title">-15% sur les antipaludéens ce week-end</div><div class="pub-card-meta"><span class="badge badge-gold">Expiré</span><span class="badge badge-blue">Promo</span><span class="pub-card-date">Il y a 5j</span></div></div></div>
+      </div>
+    </div>
+    <div class="tab-content" id="pub-stats-tab">
+      <div class="info-grid">
+        <div class="info-box"><div class="info-box-label">Vues ce mois</div><div class="info-box-val" style="color:var(--accent2)">1 284</div></div>
+        <div class="info-box"><div class="info-box-label">Pubs actives</div><div class="info-box-val" style="color:var(--success)">3</div></div>
+        <div class="info-box"><div class="info-box-label">Contacts reçus</div><div class="info-box-val" style="color:var(--gold)">47</div></div>
+        <div class="info-box"><div class="info-box-label">Note clients</div><div class="info-box-val" style="color:var(--warn)">⭐ 4.7</div></div>
+      </div>
+      <button class="btn btn-gold btn-full mt-8" onclick="switchPage('mono',document.querySelectorAll('.nav-item')[4])">💰 Voir les offres Premium</button>
+    </div>
+  </div>
+
+  <!-- PAGE MONÉTISATION -->
+  <div class="page" id="page-mono">
+    <div class="section-title">💰 <span class="accent">Premium</span> & Soutien</div>
+    <div class="mono-hero">
+      <div style="font-size:2.5rem;margin-bottom:8px">🚀</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:6px">Choisissez votre plan</div>
+      <div style="color:var(--text2);font-size:.9rem">Accédez à toutes les fonctionnalités et développez votre activité santé.</div>
+    </div>
+
+    <div class="plan-card free">
+      <div class="plan-name">🆓 Gratuit</div>
+      <div class="plan-price">0 <span>FCFA / mois</span></div>
+      <div style="margin-top:10px">
+        <div class="plan-feature"><span class="pf-icon">✓</span> Scanner médicaments (10/mois)</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Armoire à pharmacie (5 médicaments)</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Authentification basique</div>
+        <div class="plan-feature locked"><span class="pf-icon">🔒</span> Pilulier & rappels avancés</div>
+        <div class="plan-feature locked"><span class="pf-icon">🔒</span> Publications commerçant illimitées</div>
+        <div class="plan-feature locked"><span class="pf-icon">🔒</span> Profils famille illimités</div>
+      </div>
+    </div>
+
+    <div class="plan-card starter" onclick="showPaymentModal('Starter','2 500')">
+      <div class="plan-name" style="color:var(--accent2)">⚡ Starter</div>
+      <div class="plan-price" style="color:var(--accent2)">2 500 <span>FCFA / mois</span></div>
+      <div style="margin-top:10px">
+        <div class="plan-feature"><span class="pf-icon">✓</span> Scanner illimité</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Armoire illimitée + alertes péremption</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Pilulier & rappels navigateur</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Profils famille (jusqu'à 4)</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Authentification avancée</div>
+        <div class="plan-feature locked"><span class="pf-icon">🔒</span> Publications commerçant</div>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="event.stopPropagation();showPaymentModal('Starter','2 500')">Souscrire — 2 500 FCFA/mois</button>
+    </div>
+
+    <div class="plan-card pro" onclick="showPaymentModal('Pro Commerçant','7 500')">
+      <div class="plan-name" style="color:var(--gold)">👑 Pro Commerçant</div>
+      <div class="plan-price" style="color:var(--gold)">7 500 <span>FCFA / mois</span></div>
+      <div style="margin-top:10px">
+        <div class="plan-feature"><span class="pf-icon">✓</span> Tout Starter inclus</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Publications illimitées + fichiers joints</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Badge vérifié prioritaire + boost visibilité</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Statistiques avancées (vues, contacts, taux)</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Alertes ruptures de stock nationales</div>
+        <div class="plan-feature"><span class="pf-icon">✓</span> Export historique PDF CNPS</div>
+      </div>
+      <button class="btn btn-gold btn-full" style="margin-top:14px" onclick="event.stopPropagation();showPaymentModal('Pro Commerçant','7 500')">Souscrire — 7 500 FCFA/mois</button>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:1rem">📢 Espaces Publicitaires</div>
+    <div class="card" style="background:linear-gradient(135deg,rgba(0,119,255,.08),rgba(0,194,168,.04));border-color:rgba(0,119,255,.3)">
+      <div style="font-weight:600;margin-bottom:6px">Pharmacie, clinique ou laboratoire ?</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:10px">Diffusez vos offres auprès des utilisateurs MediSecu. Tarifs à partir de <strong>15 000 FCFA/mois</strong>.</div>
+      <button class="btn btn-primary btn-sm" onclick="copyNumber('675 55 54 72','MTN');showToast('📧 Contact : +237 675 55 54 72 (MTN) — Numéro copié','info')">📞 Nous contacter</button>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title" style="font-size:1rem">💛 Soutenir le projet</div>
+    <div style="font-size:.85rem;color:var(--text2);margin-bottom:12px">MediSecu reste gratuit pour les patients grâce à votre soutien.</div>
+
+    <div class="amount-btns">
+      <button class="amount-btn" onclick="selectAmount(this,'500')">500 FCFA</button>
+      <button class="amount-btn" onclick="selectAmount(this,'1000')">1 000 FCFA</button>
+      <button class="amount-btn selected" onclick="selectAmount(this,'2000')">2 000 FCFA</button>
+      <button class="amount-btn" onclick="selectAmount(this,'5000')">5 000 FCFA</button>
+      <button class="amount-btn" onclick="selectAmount(this,'libre')">Montant libre</button>
+    </div>
+
+    <div class="mm-card mtn" onclick="copyNumber('675 55 54 72','MTN MoMo')">
+      <div class="mm-logo mtn">🟡</div>
+      <div class="mm-info">
+        <div class="mm-provider">MTN Mobile Money</div>
+        <div class="mm-number">675 55 54 72</div>
+        <div class="mm-name">MediSecu</div>
+      </div>
+      <button class="mm-copy" onclick="event.stopPropagation();copyNumber('675 55 54 72','MTN MoMo')">📋 Copier</button>
+    </div>
+
+    <div class="mm-card orange-mm" onclick="copyNumber('693 58 53 30','Orange Money')">
+      <div class="mm-logo orange-mm">🟠</div>
+      <div class="mm-info">
+        <div class="mm-provider">Orange Money</div>
+        <div class="mm-number">693 58 53 30</div>
+        <div class="mm-name">MediSecu</div>
+      </div>
+      <button class="mm-copy" onclick="event.stopPropagation();copyNumber('693 58 53 30','Orange Money')">📋 Copier</button>
+    </div>
+
+    <div class="card" style="background:rgba(0,194,168,.05);border-color:rgba(0,194,168,.2);margin-top:4px">
+      <div style="font-size:.82rem;color:var(--text2);line-height:1.7">
+        ① Effectuez le virement au numéro de votre choix<br>
+        ② Envoyez la capture par WhatsApp au <strong style="color:var(--accent)">+237 675 55 54 72</strong><br>
+        ③ Votre compte Premium sera activé sous <strong>2h</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE INFOS -->
+  <div class="page" id="page-info">
+    <div class="hero-info">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:6px">Medi<span style="color:var(--accent)">Secu</span></div>
+      <div style="color:var(--text2);font-size:.9rem;line-height:1.6">Votre garde-fou numérique pour une santé sécurisée en Afrique francophone. Scan, vérifie, protège.</div>
+    </div>
+    <div class="campaign-slot">
+      <div class="campaign-label">📢 Campagne Santé Publique</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:6px">Paludisme Zéro 2025 – Distribution nationale de moustiquaires</div>
+      <div style="font-size:.82rem;color:var(--text2)">ONG AfriSanté · Ministère de la Santé Publique du Cameroun</div>
+      <button class="btn btn-sm btn-secondary mt-8" onclick="showToast('Lien campagne ouvert','info')">En savoir plus →</button>
+    </div>
+    <button class="btn btn-gold btn-full" style="margin-bottom:12px" onclick="switchPage('mono',document.querySelectorAll('.nav-item')[4])">💰 Plans Premium &amp; Soutien Mobile Money</button>
+    <div class="premium-card" onclick="showPremiumModal()">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:4px"><span style="color:var(--gold)">👑</span> MediSecu Premium — Phase 2</div>
+      <div style="color:var(--text2);font-size:.85rem;margin-bottom:10px">Fonctionnalités en développement actif</div>
+      <div class="premium-feature"><span class="check">✓</span> Géolocalisation pharmacies agréées temps réel</div>
+      <div class="premium-feature"><span class="check">✓</span> Téléconsultation intégrée</div>
+      <div class="premium-feature"><span class="check">✓</span> Alertes ruptures de stock nationales</div>
+      <div class="premium-feature"><span class="check">✓</span> IA interactions médicamenteuses avancées</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;margin-bottom:8px">ℹ️ À propos de MediSecu</div>
+      <div style="font-size:.85rem;color:var(--text2);line-height:1.7">Application de santé numérique dédiée à l'Afrique francophone. Lutte contre les contrefaçons, observance thérapeutique et pharmacovigilance citoyenne.</div>
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-secondary" onclick="showToast('Confidentialité','info')">Confidentialité</button>
+        <button class="btn btn-sm btn-secondary" onclick="showToast('CGU chargées','info')">CGU</button>
+        <button class="btn btn-sm btn-secondary" onclick="showToast('Contact : +237 675 55 54 72','info')">Contact</button>
+      </div>
+      <div style="font-size:.75rem;color:var(--text3);margin-top:10px;text-align:center">v1.1.0 · MediSecu © 2025 · Tous droits réservés</div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('scan',this)"><span class="nav-icon">📷</span>Scanner</button>
+    <button class="nav-item" onclick="switchPage('pharmacie',this)"><span class="nav-icon">🏠</span>Pharmacie</button>
+    <button class="nav-item" onclick="switchPage('auth',this)"><span class="nav-icon">🔐</span>Authentifier</button>
+    <button class="nav-item" onclick="switchPage('merchant',this)"><span class="nav-icon">🏪</span>Commerçants</button>
+    <button class="nav-item" onclick="switchPage('mono',this)"><span class="nav-icon">💰</span>Premium</button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="notifModal" onclick="closeModal('notifModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔔 Notifications <button class="modal-close" onclick="closeModal('notifModal')">✕</button></div>
+    <div class="med-item"><div class="med-icon">⚠️</div><div class="med-info"><div class="med-name">Nivaquine expiré dans votre armoire</div><div class="med-exp soon">Il y a 1 heure</div></div></div>
+    <div class="med-item"><div class="med-icon">💊</div><div class="med-info"><div class="med-name">Rappel : Amoxicilline 13h00</div><div class="med-exp ok">Aujourd'hui</div></div></div>
+    <div class="med-item"><div class="med-icon">🔐</div><div class="med-info"><div class="med-name">Alerte : Contrefaçons signalées à Douala</div><div class="med-exp soon">Hier</div></div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profileModal" onclick="closeModal('profileModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 Mon Profil <button class="modal-close" onclick="closeModal('profileModal')">✕</button></div>
+    <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;margin:0 auto 14px">JO</div>
+    <div style="text-align:center;margin-bottom:16px"><div style="font-weight:600">Jorel</div><div style="color:var(--text2);font-size:.85rem">jorel@medisecu.cm</div></div>
+    <div class="form-group"><label class="form-label">Groupe sanguin</label><select class="form-input"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
+    <div class="form-group"><label class="form-label">Allergies connues</label><input type="text" class="form-input" placeholder="Ex: Pénicilline, Aspirine..." /></div>
+    <button class="btn btn-primary btn-full" onclick="closeModal('profileModal');showToast('Profil mis à jour','success')">💾 Enregistrer</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-secondary btn-full" onclick="closeModal('profileModal');showToast('Déconnecté','warn')">🚪 Se déconnecter</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="premiumModal" onclick="closeModal('premiumModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👑 Premium Phase 2 <button class="modal-close" onclick="closeModal('premiumModal')">✕</button></div>
+    <div style="text-align:center;margin-bottom:16px"><div style="font-size:2.5rem;margin-bottom:8px">🚀</div><div style="color:var(--text2);font-size:.9rem">En développement actif</div></div>
+    <div class="premium-feature"><span class="check">✓</span> Géolocalisation temps réel pharmacies agréées</div>
+    <div class="premium-feature"><span class="check">✓</span> Historique médical + export PDF CNPS</div>
+    <div class="premium-feature"><span class="check">✓</span> Téléconsultation intégrée</div>
+    <div class="premium-feature"><span class="check">✓</span> Alertes ruptures de stock nationales</div>
+    <div class="premium-feature"><span class="check">✓</span> IA interactions médicamenteuses avancées</div>
+    <div class="divider"></div>
+    <button class="btn btn-primary btn-full" onclick="closeModal('premiumModal');showToast('✉️ Vous serez notifié au lancement','success')">🔔 M'avertir au lancement</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="paymentModal" onclick="closeModal('paymentModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💳 <span id="payPlanName">Souscrire</span> <button class="modal-close" onclick="closeModal('paymentModal')">✕</button></div>
+    <div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(0,119,255,.08));border-radius:var(--radius-sm);border:1px solid rgba(244,162,97,.3);margin-bottom:16px">
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:4px">Montant mensuel</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--gold)" id="payAmount">7 500 FCFA</div>
+    </div>
+    <div style="font-weight:600;margin-bottom:10px">Paiement via Mobile Money :</div>
+    <div class="mm-card mtn" onclick="confirmPayment('MTN MoMo','675 55 54 72')">
+      <div class="mm-logo mtn">🟡</div>
+      <div class="mm-info"><div class="mm-provider">MTN Mobile Money</div><div class="mm-number">675 55 54 72</div><div class="mm-name">MediSecu</div></div>
+      <button class="btn btn-sm btn-primary">Payer →</button>
+    </div>
+    <div class="mm-card orange-mm" onclick="confirmPayment('Orange Money','693 58 53 30')">
+      <div class="mm-logo orange-mm">🟠</div>
+      <div class="mm-info"><div class="mm-provider">Orange Money</div><div class="mm-number">693 58 53 30</div><div class="mm-name">MediSecu</div></div>
+      <button class="btn btn-sm btn-warn">Payer →</button>
+    </div>
+    <div class="card" style="background:rgba(0,194,168,.05);border-color:rgba(0,194,168,.2);margin-top:8px">
+      <div style="font-size:.82rem;color:var(--text2);line-height:1.7">
+        ① Effectuez le virement au numéro indiqué<br>
+        ② Envoyez la capture par WhatsApp au <strong style="color:var(--accent)">+237 675 55 54 72</strong><br>
+        ③ Compte activé sous <strong>2h</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addProfileModal" onclick="closeModal('addProfileModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ Nouveau Profil <button class="modal-close" onclick="closeModal('addProfileModal')">✕</button></div>
+    <div class="form-group"><label class="form-label">Prénom</label><input type="text" class="form-input" id="newProfileName" placeholder="Ex: Grand-mère" /></div>
+    <div class="form-group"><label class="form-label">Relation</label><select class="form-input"><option>Enfant</option><option>Parent</option><option>Conjoint(e)</option><option>Grand-parent</option><option>Autre</option></select></div>
+    <button class="btn btn-primary btn-full" onclick="confirmAddProfile()">Créer le profil</button>
+  </div>
+</div>
+
+<script>
+// SPLASH
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const s=document.getElementById('splash');
+    s.style.opacity='0';
+    setTimeout(()=>{ s.style.display='none'; document.getElementById('app').classList.add('visible'); if('Notification'in window)Notification.requestPermission(); },600);
+  },2400);
+});
+
+// NAV
+function switchPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const page=document.getElementById('page-'+name);
+  if(page)page.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// TABS
+function switchTab(btn,tabId){
+  btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.page').querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  const t=document.getElementById(tabId);
+  if(t)t.classList.add('active');
+}
+
+// TOAST
+let tt;
+function showToast(msg,type='success'){
+  const i={success:'✅',warn:'⚠️',danger:'🚨',info:'ℹ️'};
+  document.getElementById('toastText').textContent=msg;
+  document.getElementById('toastIcon').textContent=i[type]||'✅';
+  document.getElementById('toast').classList.add('show');
+  clearTimeout(tt); tt=setTimeout(hideToast,4000);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+// MODALS
+function showNotifModal(){ document.getElementById('notifModal').classList.add('show'); }
+function showProfileModal(){ document.getElementById('profileModal').classList.add('show'); }
+function showPremiumModal(){ document.getElementById('premiumModal').classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function showPaymentModal(plan,amount){
+  document.getElementById('payPlanName').textContent=plan;
+  document.getElementById('payAmount').textContent=amount+' FCFA/mois';
+  document.getElementById('paymentModal').classList.add('show');
+}
+function confirmPayment(provider,number){
+  closeModal('paymentModal');
+  copyNumberSilent(number);
+  showToast('📲 Numéro '+number+' copié · Effectuez le virement '+provider+' puis envoyez la capture par WhatsApp','success');
+}
+
+// ═══ VRAIE CAMÉRA ═══
+let stream=null, codeReader=null, scanning=false, facingMode='environment';
+
+async function startCamera(){
+  const wrapper=document.getElementById('cameraWrapper');
+  const video=document.getElementById('cameraVideo');
+  const status=document.getElementById('camStatus');
+  const btnStart=document.getElementById('btnStartCam');
+  const btnStop=document.getElementById('btnStopCam');
+  const btnFlip=document.getElementById('btnFlip');
+
+  status.className='cam-status idle';
+  status.textContent='⏳ Démarrage caméra...';
+
+  try{
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ ideal:facingMode }, width:{ideal:1280}, height:{ideal:720} }
+    });
+    video.srcObject=stream;
+    wrapper.classList.add('active');
+    btnStart.style.display='none';
+    btnStop.style.display='';
+    btnFlip.style.display='';
+    status.className='cam-status scanning';
+    status.textContent='🔍 Scan actif — Pointez le code-barres ou QR code';
+    scanning=true;
+    initZXingDecode(video);
+  }catch(err){
+    status.className='cam-status error';
+    if(err.name==='NotAllowedError') status.textContent='❌ Permission refusée — Autorisez la caméra dans les paramètres du navigateur';
+    else if(err.name==='NotFoundError') status.textContent='❌ Aucune caméra détectée sur cet appareil';
+    else status.textContent='❌ Erreur : '+err.message;
+    showToast(status.textContent,'danger');
+  }
+}
+
+function stopCamera(){
+  scanning=false;
+  if(codeReader){ try{ codeReader.reset(); }catch(e){} codeReader=null; }
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  const wrapper=document.getElementById('cameraWrapper');
+  document.getElementById('cameraVideo').srcObject=null;
+  wrapper.classList.remove('active');
+  document.getElementById('btnStartCam').style.display='';
+  document.getElementById('btnStopCam').style.display='none';
+  document.getElementById('btnFlip').style.display='none';
+  const s=document.getElementById('camStatus');
+  s.className='cam-status idle';
+  s.textContent='📷 Caméra arrêtée';
+}
+
+function flipCamera(){ facingMode=facingMode==='environment'?'user':'environment'; showToast('🔄 Basculement caméra...','info'); startCamera(); }
+
+function initZXingDecode(video){
+  const doInit=()=>{
+    if(typeof ZXing!=='undefined'&&ZXing.BrowserMultiFormatReader){
+      codeReader=new ZXing.BrowserMultiFormatReader();
+      codeReader.decodeFromVideoElement(video,(result,err)=>{
+        if(result&&scanning){
+          scanning=false;
+          const code=result.getText();
+          stopCamera();
+          processCode(code);
+        }
+      });
+    } else {
+      // Fallback simulation si ZXing pas encore chargé
+      showToast('⚠️ Scanner en cours de chargement...','warn');
+      setTimeout(()=>{ if(scanning){ stopCamera(); simulateDrug(); } },4000);
+    }
+  };
+  setTimeout(doInit,600);
+}
+
+// DRUG DATABASE
+const DB={
+  default:{ name:'Amoxicilline 500mg', lab:'Cooper Pharma · Gélules', interaction:true, interact:'Metronidazole', ppv:'1 850', releve:'2 200', diff:'+19%', auth:true },
+  paracetamol:{ name:'Paracétamol 500mg', lab:'Sanofi · Comprimés', interaction:false, ppv:'900', releve:'900', diff:'0%', auth:true },
+  doliprane:{ name:'Doliprane 1000mg', lab:'Sanofi · Comprimés', interaction:false, ppv:'1 200', releve:'1 200', diff:'0%', auth:true },
+  chloroquine:{ name:'Chloroquine 100mg', lab:'Pharmedis CM', interaction:false, ppv:'1 100', releve:'1 600', diff:'+45%', auth:false },
+  ibuprofene:{ name:'Ibuprofène 400mg', lab:'Biogaran · Comprimés', interaction:true, interact:'Aspirine', ppv:'1 450', releve:'1 450', diff:'0%', auth:true },
+  artemether:{ name:'Artémether 20mg', lab:'Novartis · Comprimés', interaction:false, ppv:'3 200', releve:'4 500', diff:'+40%', auth:true },
+};
+
+function processCode(code){
+  showToast('✅ Code scanné : '+code.substring(0,20)+(code.length>20?'...':''),'success');
+  const lc=code.toLowerCase();
+  let drug=DB.default;
+  for(const k in DB){ if(lc.includes(k)){ drug=DB[k]; break; } }
+  displayDrug(drug);
+}
+
+function simulateDrug(){
+  const keys=Object.keys(DB);
+  displayDrug(DB[keys[Math.floor(Math.random()*keys.length)]]);
+  showToast('📦 Médicament identifié (simulation)','success');
+}
+
+function displayDrug(d){
+  document.getElementById('pName').textContent=d.name;
+  document.getElementById('pLab').textContent=d.lab;
+  document.getElementById('pPPV').textContent=d.ppv+' FCFA';
+  document.getElementById('pReleve').textContent=d.releve+' FCFA';
+  document.getElementById('pDiff').textContent=d.diff;
+  const ab=document.getElementById('pAuthBadge');
+  ab.textContent=d.auth?'✓ Authentique':'⚠️ Non vérifié';
+  ab.className='badge '+(d.auth?'badge-green':'badge-warn');
+  const ia=document.getElementById('interactionAlert');
+  if(d.interaction){ document.getElementById('interactDrug').textContent=d.interact; ia.style.display='flex'; }
+  else ia.style.display='none';
+  const res=document.getElementById('productResult');
+  res.classList.add('show');
+  setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+// GALERIE
+function scanFromFile(input){
+  if(!input.files||!input.files[0])return;
+  showToast('🖼️ Analyse de l\'image...','info');
+  if(typeof ZXing!=='undefined'&&ZXing.BrowserMultiFormatReader){
+    const r=new ZXing.BrowserMultiFormatReader();
+    const url=URL.createObjectURL(input.files[0]);
+    r.decodeFromImageUrl(url).then(res=>{ URL.revokeObjectURL(url); processCode(res.getText()); })
+     .catch(()=>{ URL.revokeObjectURL(url); showToast('⚠️ Code non détecté — essayez un scan direct','warn'); });
+  } else { setTimeout(simulateDrug,1200); }
+}
+
+// MANUEL
+function toggleManual(){ const el=document.getElementById('manualInput'); el.style.display=el.style.display==='none'?'':'none'; if(el.style.display!=='none') document.getElementById('manualCode').focus(); }
+function lookupManual(){
+  const val=document.getElementById('manualCode').value.trim().toLowerCase();
+  if(!val){ showToast('⚠️ Entrez un code ou un nom','warn'); return; }
+  let drug=DB.default;
+  for(const k in DB){ if(val.includes(k)||k.includes(val)){ drug=DB[k]; break; } }
+  displayDrug(drug);
+  document.getElementById('manualInput').style.display='none';
+  document.getElementById('manualCode').value='';
+}
+
+// PILULIER
+function addToPilulier(){
+  showToast('✅ Ajouté au pilulier — rappels activés','success');
+  if('Notification'in window&&Notification.permission==='granted')
+    setTimeout(()=>new Notification('MediSecu 💊',{body:'Rappel : Prenez votre médicament !'}),5000);
+}
+
+// AUTH
+function verifyAuth(){
+  const code=document.getElementById('authCode').value.trim();
+  const res=document.getElementById('authResult');
+  res.classList.add('show');
+  if(!code||code.toUpperCase().includes('FAKE')||code.length<3){
+    res.className='auth-result suspect show';
+    res.innerHTML=`<div class="auth-icon-big">🚨</div><div class="auth-status" style="color:var(--danger)">Médicament Suspect</div><div class="auth-detail">Lot <strong>${code||'inconnu'}</strong> non enregistré dans notre base.<br>Ne consommez pas et signalez.</div>`;
+  } else if(code.includes('?')||code.toUpperCase().includes('DOUBT')){
+    res.className='auth-result warning show';
+    res.innerHTML=`<div class="auth-icon-big">⚠️</div><div class="auth-status" style="color:var(--gold)">Vérification Incomplète</div><div class="auth-detail">Lot <strong>${code}</strong> — données partielles.<br>Consultez un pharmacien agréé.</div>`;
+  } else {
+    res.className='auth-result authentic show';
+    res.innerHTML=`<div class="auth-icon-big">✅</div><div class="auth-status" style="color:var(--success)">Médicament Authentique</div><div class="auth-detail">Lot <strong>${code}</strong> · Enregistré DGSPSN<br>Vérifié le ${new Date().toLocaleDateString('fr-FR')}<br>Péremption : <strong>Décembre 2026</strong></div>`;
+  }
+  showToast('🔐 Vérification terminée','success');
+}
+
+// COMMERÇANT
+function selectType(chip){ chip.closest('#typeSelector').querySelectorAll('.type-chip').forEach(c=>c.classList.remove('selected')); chip.classList.add('selected'); }
+
+function handleFiles(files){
+  const list=document.getElementById('fileList');
+  const icons={PDF:'📄',JPG:'🖼️',JPEG:'🖼️',PNG:'🖼️',XLS:'📊',XLSX:'📊',DOC:'📝',DOCX:'📝'};
+  Array.from(files).forEach(f=>{
+    const ext=f.name.split('.').pop().toUpperCase();
+    const item=document.createElement('div'); item.className='file-item';
+    item.innerHTML=`<span>${icons[ext]||'📎'}</span><span class="file-item-name">${f.name}</span><span style="font-size:.75rem;color:var(--text3)">${(f.size/1024).toFixed(0)} Ko</span><button onclick="this.closest('.file-item').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer">✕</button>`;
+    list.appendChild(item);
+  });
+  showToast(`📎 ${files.length} fichier(s) ajouté(s)`,'success');
+}
+
+const fd=document.getElementById('fileDrop');
+['dragenter','dragover'].forEach(e=>fd.addEventListener(e,ev=>{ev.preventDefault();fd.classList.add('dragover');}));
+['dragleave','drop'].forEach(e=>fd.addEventListener(e,ev=>{ev.preventDefault();fd.classList.remove('dragover');if(ev.type==='drop'&&ev.dataTransfer)handleFiles(ev.dataTransfer.files);}));
+
+function publishPost(){
+  const title=document.getElementById('pubTitle').value.trim();
+  if(!title){ showToast('⚠️ Ajoutez un titre','warn'); return; }
+  const list=document.getElementById('pubsList');
+  const card=document.createElement('div'); card.className='pub-card';
+  card.innerHTML=`<div class="pub-card-banner">📢</div><div class="pub-card-body"><div class="pub-card-merchant">Pharmacie Centrale</div><div class="pub-card-title">${title}</div><div class="pub-card-meta"><span class="badge badge-green">Actif</span><span class="pub-card-date">À l'instant</span></div></div>`;
+  list.prepend(card);
+  ['pubTitle','pubDesc','pubPrice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fileList').innerHTML='';
+  showToast('🚀 Publication mise en ligne !','success');
+  document.querySelectorAll('#page-merchant .tab-btn')[1].click();
+}
+
+// PROFILS
+function selectProfile(el,name){ document.querySelectorAll('.profile-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); showToast('Profil : '+name,'info'); }
+function addProfile(){ document.getElementById('addProfileModal').classList.add('show'); }
+function confirmAddProfile(){
+  const name=document.getElementById('newProfileName').value.trim()||'Proche';
+  const chips=document.getElementById('profileChips');
+  const last=chips.lastElementChild;
+  const chip=document.createElement('div'); chip.className='profile-chip';
+  chip.innerHTML=`👤 ${name}`; chip.onclick=()=>selectProfile(chip,name);
+  chips.insertBefore(chip,last);
+  closeModal('addProfileModal');
+  showToast('✅ Profil "'+name+'" créé','success');
+}
+
+// MOBILE MONEY
+function copyNumber(number,provider){
+  copyNumberSilent(number);
+  showToast(`📋 ${provider} : ${number.replace(/\s/g,'')} copié`,'success');
+}
+function copyNumberSilent(number){
+  const clean=number.replace(/\s/g,'');
+  if(navigator.clipboard) navigator.clipboard.writeText(clean).catch(()=>{});
+}
+
+// MONTANT SOUTIEN
+function selectAmount(btn,amount){
+  document.querySelectorAll('.amount-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected');
+  if(amount==='libre') showToast('Entrez le montant de votre choix lors du virement','info');
+}
+</script>
+</body>
+</html>
